@@ -35,14 +35,14 @@ body {
   /*padding-right: 5%;*/
   font-size: 2.5vw;
   font-variant: small-caps;
-  font-family: 'Helvetica';
+  font-family: 'Helvetica', sans-serif;
   font-weight: lighter;
   border: 1px solid white;
   word-break: break-all;
 }
 
 h1 {
-  font-family: 'Helvetica';
+  font-family: 'Helvetica', sans-serif;
   margin-bottom: 0;
   font-size: 3rem;
 }
@@ -52,8 +52,7 @@ h1 {
 }
 
 hr {
-  margin: 0;
-  margin-bottom: 0.25%;
+  margin: 0 0 0.25% 0;
 }
 
 .login {
@@ -100,7 +99,7 @@ text-transform: uppercase;
 .instance .instance-name {
   /*-webkit-transform: rotate(-90deg) translateX(15%);*/
   /*text-transform: uppercase;*/
-  font-family: 'Helvetica';
+  font-family: 'Helvetica', sans-serif;
   font-size: 1.5vw;
   font-weight: lighter;
   color: black;
@@ -109,7 +108,7 @@ text-transform: uppercase;
 }
 
 .instance .instance-date {
-  font-family: 'Helvetica';
+  font-family: 'Helvetica', sans-serif;
   padding-top: 40%;
   margin-bottom: 0;
   font-size: 1.25vw;
@@ -174,36 +173,18 @@ p {
   text-align: right;
 }
 
-/*img {
-  display: block;
-  max-height: 75vh;
-  margin: 0 auto;
-  padding: 5%;
-  /*border: 2px solid crimson;*/
-}*/
-
-
-#source {
-  -webkit-flow-into: main-thread;
-}
-
-.overflow {
-  -webkit-flow-from: main-thread;
-}
-
 .input-form {
-  margin-top: 2.5%;
+  margin-top: 1.25%;
+  margin-bottom: 5%;
   padding: 2%;
-  /*border-radius: 10px;*/
   border-top: 2px solid crimson;
   border-bottom: 2px solid crimson;
-  /*border: 1px dashed crimson;*/
 }
 
 
 textarea, input[type=text] {
   box-shadow: none;
-  border-radius: 0px;
+  border-radius: 0;
   font-weight: 300;
   -webkit-transition: 1s;
   border-color: grey;
@@ -212,8 +193,7 @@ textarea, input[type=text] {
 textarea:focus, input[type=text]:focus {
   border-radius: 7px;
   -webkit-transition: 0.25s;
-  border-width: 1px;
-  border-color: black;
+  border: 1px solid black;
 
 }
 
@@ -224,4 +204,12 @@ input[type=file] {
 .form-header {
   font-family: 'Crimson Text', serif;
   color: lightgray;
+}
+
+.flashes li {
+  list-style: none;
+  font-family: 'Helvetica', sans-serif;
+  font-size: 10pt;
+  font-weight: lighter;
+  color: crimson;
 }
