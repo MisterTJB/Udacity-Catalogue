@@ -14,43 +14,8 @@
     <div class="small-12 small-centered columns">
       <h1><span class="modern">modern</span>ity</h1>
       <hr>
-      <div class="row">
-        <div class="small-10 columns">
-          <nav aria-label="You are here:" role="navigation">
-            <ul class="breadcrumbs">
-              <li><a href="/">home</a></li>
+      {% include "breadcrumbs.html" %}
 
-              {% if example %}
-
-              <li><a href="/{{category}}">{{category}}</a></li>
-              <li><span class="show-for-sr">Current: </span> {{example.name}}</li>
-
-              {% elif examples or category %}
-
-              <li><span class="show-for-sr">Current: </span> {{category}}</li>
-
-              {% endif %}
-
-            </ul>
-          </nav>
-        </div>
-        <div class="small-2 columns">
-          <div class="login text-right">
-            {% if example %}
-
-            <a href="edit">Edit</a>
-            <a href="delete">Delete</a>
-
-            {% elif examples or category %}
-
-            <a href="new">New</a>
-
-            {% endif %}
-            <a href="#">Log In</a>
-          </div>
-
-        </div>
-      </div>
 
     </div>
   </div>

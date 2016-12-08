@@ -1,0 +1,46 @@
+<div class="row">
+        <div class="small-10 columns">
+          <nav aria-label="You are here:" role="navigation">
+            <ul class="breadcrumbs">
+              <li><a href="/">home</a></li>
+
+              {% if example %}
+
+              <li><a href="/{{category}}">{{category}}</a></li>
+
+              {% if form_data %}
+
+              <li><a href="/{{category}}/{{form_data.id}}">{{form_data.name}}</a> </li>
+
+              {% else %}
+
+              <li><span class="show-for-sr">Current: </span> {{example.name}} </li>
+
+              {% endif %}
+
+              {% elif examples or category %}
+
+              <li><span class="show-for-sr">Current: </span> {{category}}</li>
+
+              {% endif %}
+
+            </ul>
+          </nav>
+        </div>
+        <div class="small-2 columns">
+          <div class="login text-right">
+            {% if example %}
+
+            <a href="edit">Edit</a>
+            <a href="delete">Delete</a>
+
+            {% elif examples or category %}
+
+            <a href="new">New</a>
+
+            {% endif %}
+            <a href="#">Log In</a>
+          </div>
+
+        </div>
+      </div>
