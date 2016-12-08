@@ -8,14 +8,9 @@ Base = declarative_base()
 class Category(Base):
     __tablename__ = 'categories'
     id = Column(Integer, primary_key=True)
-    name = Column(String(80), nullable=False)
-    image_path = Column(String(256))
+    name = Column(String, nullable=False)
+    image_path = Column(String)
 
-
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    public_id = Column(String(256), nullable=False)
 
 
 class Example(Base):
@@ -23,10 +18,9 @@ class Example(Base):
     id = Column(Integer, primary_key=True)
     category_id = Column(Integer, ForeignKey('categories.id'))
     category = relationship(Category)
-    name = Column(String(16), nullable=False)
+    name = Column(String, nullable=False)
     detail = Column(String)
     year_from = Column(Integer)
     year_to = Column(Integer)
-    image_path = Column(String(256))
-    owner_id = Column(Integer, ForeignKey('users.id'))
-    owner = relationship(User)
+    image_path = Column(String)
+    creator_email = Column(String)

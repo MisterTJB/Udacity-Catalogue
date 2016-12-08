@@ -13,30 +13,40 @@ from sqlalchemy.orm import sessionmaker
 from model.catalogue import *
 from functools import wraps
 
+# Configure file upload parameters
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-CLIENT_ID = json.loads(
-    open('secret.json', 'r').read())['web']['client_id']
-APPLICATION_NAME = "modernity"
 
+# Load OAuth client id from secret.json
+CLIENT_ID = json.loads(open('secret.json', 'r').read())['web']['client_id']
+
+# Configure application
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'some_secret'
 
+# Establish a database engine and session factory
 engine = create_engine("postgresql://127.0.0.1:5432/catalogue")
 Base.metadata.bind = engine
 Session = sessionmaker(bind=engine)
 
 
 def authorship_required(f):
+    """
+    Decorator for views to ensure that mutations to an item can only
+    be carried out by their author.
+
+    If a user is the author, perform the mutation; otherwise, redirect
+    to the enclosing category page for the item
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         session = Session()
 
         example_id = kwargs['example_id']
         current_user_email = login_session['email']
-        results = session.query(User).join(Example).filter(
-            Example.id == example_id, User.public_id == current_user_email).all()
+        results = session.query(Example).filter(
+            Example.id == example_id, Example.creator_email == current_user_email).all()
 
         if len(results) == 0:
             return redirect(url_for('category', **kwargs))
@@ -44,6 +54,12 @@ def authorship_required(f):
     return decorated_function
 
 def login_required(f):
+    """
+    Decorator for views to ensure that a user is authenticated.
+
+    If a user is authenticated, continue with the request; otherwise
+    redirect to the main page.
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not 'email' in login_session:
@@ -54,7 +70,12 @@ def login_required(f):
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-    # # Obtain authorization code
+    """
+    Exchange an authorisation code for an access token and retrieve
+    a user's Google email address.
+    """
+
+    # Obtain authorization code from request
     code = request.data
 
     try:
@@ -74,6 +95,7 @@ def gconnect():
            % access_token)
     h = httplib2.Http()
     result = json.loads(h.request(url, 'GET')[1])
+
     # If there was an error in the access token info, abort.
     if result.get('error') is not None:
         response = make_response(json.dumps(result.get('error')), 500)
@@ -108,21 +130,14 @@ def gconnect():
     # Store the access token in the session for later use.
     login_session['access_token'] = credentials.access_token
     login_session['gplus_id'] = gplus_id
+    login_session['email'] = result['email']
 
-    # Get user info
-    userinfo_url = "https://www.googleapis.com/oauth2/v1/userinfo"
-    params = {'access_token': credentials.access_token, 'alt': 'json'}
-    answer = requests.get(userinfo_url, params=params)
-
-    data = answer.json()
-
+    # Authentication was successful
     response = make_response(
-            json.dumps('Successful signin'),
+            json.dumps('Successful sign in'),
             200)
 
     return response
-
-    # DISCONNECT - Revoke a current user's token and reset their login_session
 
 
 @app.route('/gdisconnect')
@@ -291,8 +306,7 @@ def edit(category_name, example_id):
         # submit a empty part without filename
         if file.filename == '':
             to_edit.update({'name': name,
-                            'detail': detail,
-                            'year_to': year_to})
+                            'detail': detail})
             session.commit()
             return redirect(
                 url_for('example',
