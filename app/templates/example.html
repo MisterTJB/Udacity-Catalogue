@@ -7,11 +7,23 @@
       <img class="context-image" src="/{{example.image_path}}">
     </div>
     <div class="small-6 columns">
-      <h1 class="example-title text-left"><span class="example-date">{{example.date}}</span> {{example.name}} </h1>
+      <h1 class="example-title text-left"><span class="example-date">{{example.year_from}}</span> {{example.name}} </h1>
 
       {% for paragraph in example.detail.split("\n") %}
 
+        {% if paragraph.startswith('**featured**') %}
+
+        <p class="feature">{{paragraph[12:]}}</p>
+
+        {% else %}
+
         <p>{{paragraph}}</p>
+
+        {% endif %}
+
+
+
+
 
       {% endfor %}
     </div>

@@ -33,16 +33,20 @@
           <label for="content">Content</label>
           <textarea form="form" rows="5" name="content" id="content">{{form_data.detail}}</textarea>
         </div>
-        <div class="row columns">
-          <label for="featured-paragraph">Featured Paragraph</label>
-         <textarea form="form" rows="2" name="featured-paragraph" id="featured-paragraph"></textarea>
+
+        <div class="row">
+          {% if form_data.image_path %}
+          <div class="small-4 columns">
+            <label for="current-image">Current Image</label>
+            <img id="current-image" src="/{{form_data.image_path}}">
+          </div>
+          {% endif %}
+          <div class="small-8 columns">
+            <label for="image">Select Image</label>
+            <input type="file" id="image" class="file-input" name="image">
+          </div>
         </div>
-        {% if form_data.image_path %}
-        <img src="/{{form_data.image_path}}">
-        {% endif %}
-        <label for="image">Image</label>
-        <input type="file" id="image" class="file-input" name="image">
-        <input type="submit" class="button" value="Add">
+        <input type="submit" class="button" value="Submit">
       </form>
     </div>
   </div>
