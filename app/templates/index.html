@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="small-up-2 medium-up-3 small-12 medium-11 small-centered columns">
+
+
+      {% for category in categories %}
+       <div class="column category">
+        <a href="{{category.name.lower()}}">
+          <div class="outer">
+            <div class="im-col" >
+              <img src="{{category.image_path}}">
+            </div>
+            <div class="text-overlay">
+              <h2 class="category-text">{{category.name.lower()}}</h2>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      {% endfor %}
+
+
+    </div>
+  </div>
+
+{% endblock %}

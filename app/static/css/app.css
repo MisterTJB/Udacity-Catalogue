@@ -1,0 +1,227 @@
+body {
+  background-color: #fffaf4;
+}
+
+.category:hover {
+  opacity: 0.5;
+}
+
+.im-col {
+  -webkit-clip-path: circle(40% at center);
+  clip-path: circle(40% at center);
+}
+
+.outer {
+  position: relative;
+
+}
+
+.text-overlay {
+   position: absolute;
+
+   width: 60%;
+   height: 100%;
+   top: 0;
+   left: 0;
+}
+
+.category-text {
+  color: white;
+  background-color: crimson;
+  z-index: 1;
+  box-sizing: content-box;
+  margin-top: 90%;
+  padding-left: 5%;
+  /*padding-right: 5%;*/
+  font-size: 2.5vw;
+  font-variant: small-caps;
+  font-family: 'Helvetica';
+  font-weight: lighter;
+  border: 1px solid white;
+  word-break: break-all;
+}
+
+h1 {
+  font-family: 'Helvetica';
+  margin-bottom: 0;
+  font-size: 3rem;
+}
+
+.modern {
+  text-decoration: overline;
+}
+
+hr {
+  margin: 0;
+  margin-bottom: 0.25%;
+}
+
+.login {
+  -webkit-font-smoothing: antialiased;
+color: rgb(33, 153, 232);
+font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
+font-size: 11px;
+text-transform: uppercase;
+}
+
+/*.instance:nth-child(odd) {
+  -webkit-transform: rotate(30deg);
+}
+
+.instance:nth-child(even) {
+  -webkit-transform: rotate(-30deg);
+}*/
+
+.instance {
+  -webkit-transform: rotate(45deg);
+  border: 1px solid red;
+  min-height: 22vw;
+  -webkit-transition: 0.25s;
+}
+
+@media screen and (max-width: 639px) {
+  .instance {
+    -webkit-transform: rotate(45deg);
+    border: 1px solid red;
+    min-height: 40vw;
+    -webkit-transition: 0.25s;
+  }
+}
+
+.instance img{
+  display: none;
+
+}
+
+.top-pad {
+  margin-top: 10%;
+}
+
+.instance .instance-name {
+  /*-webkit-transform: rotate(-90deg) translateX(15%);*/
+  /*text-transform: uppercase;*/
+  font-family: 'Helvetica';
+  font-size: 1.5vw;
+  font-weight: lighter;
+  color: black;
+  mix-blend-mode: saturation;
+  padding-left: 0.65em;
+}
+
+.instance .instance-date {
+  font-family: 'Helvetica';
+  padding-top: 40%;
+  margin-bottom: 0;
+  font-size: 1.25vw;
+  font-weight: lighter;
+  color: black;
+}
+
+@media screen and (max-width: 639px) {
+
+  .instance .instance-name {
+    font-size: 3.5vw;
+  }
+
+  .instance .instance-date {
+    font-size: 2.5vw;
+  }
+}
+
+
+.instance:hover {
+  position: relative;
+  background-color: white;
+  -webkit-transform: rotate(15deg);
+  -webkit-transition: 0.25s;
+  opacity: 0.85;
+  z-index: 1;
+}
+
+p {
+  font-family: 'Crimson Text', serif;
+  text-align: justify;
+}
+
+.example-title {
+  font-family: 'Crimson Text', serif;
+  color: crimson;
+}
+
+.example-date {
+  font-family: 'Crimson Text', serif;
+  color: lightgray;
+}
+
+.context-image {
+  margin-top: 4.5em;
+  -webkit-transition: 0.5s;
+}
+
+.context-image:hover {
+  position: relative;
+  max-width: 45vw;
+  z-index: 2;
+  -webkit-transition: 0.5s;
+
+}
+
+.feature {
+  -webkit-transform: translateX(-20%);
+  border-top: 2px solid crimson;
+  border-bottom: 2px solid crimson;
+  padding: 3% 2% 2% 15%;
+  text-align: right;
+}
+
+/*img {
+  display: block;
+  max-height: 75vh;
+  margin: 0 auto;
+  padding: 5%;
+  /*border: 2px solid crimson;*/
+}*/
+
+
+#source {
+  -webkit-flow-into: main-thread;
+}
+
+.overflow {
+  -webkit-flow-from: main-thread;
+}
+
+.input-form {
+  margin-top: 2.5%;
+  padding: 2%;
+  /*border-radius: 10px;*/
+  border-top: 2px solid crimson;
+  border-bottom: 2px solid crimson;
+  /*border: 1px dashed crimson;*/
+}
+
+
+textarea, input[type=text] {
+  box-shadow: none;
+  border-radius: 0px;
+  font-weight: 300;
+  -webkit-transition: 1s;
+  border-color: grey;
+}
+
+textarea:focus, input[type=text]:focus {
+  border-radius: 7px;
+  -webkit-transition: 0.25s;
+  border-width: 1px;
+  border-color: black;
+
+}
+
+input[type=file] {
+  text-transform: capitalize;
+}
+
+.form-header {
+  font-family: 'Crimson Text', serif;
+  color: lightgray;
+}

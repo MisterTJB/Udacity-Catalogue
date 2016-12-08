@@ -1,0 +1,20 @@
+{% extends "base.html" %}}
+
+{% block content %}
+<div class="row top-pad">
+    <div class="small-up-2 medium-up-4 small-10 medium-11 small-centered instances columns">
+
+      {% for example in examples %}
+
+      <div class="column instance">
+        <a href="{{example.id}}">
+          <h4 class="instance-date text-right">{{example.year_from}}</h4>
+          <h3 class="instance-name text-right">{{example.name}}</h3>
+        </a>
+      </div>
+
+      {% endfor %}
+
+    </div>
+  </div>
+{% endblock %}
