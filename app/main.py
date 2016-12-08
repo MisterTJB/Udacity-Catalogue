@@ -52,7 +52,8 @@ def new(category_name):
     if request.method == 'GET':
         return render_template('create-edit.html',
                                category=category_name,
-                               example=example)
+                               example=example,
+                               form_data=None)
 
     else:
 
@@ -72,20 +73,23 @@ def new(category_name):
             return redirect(request.url)
         if file and allowed_file(file.filename):
             print "FILE ALL GOOD"
-            filename = secure_filename(file.filename)
+            from time import time
+            filename = secure_filename("%f_%s" % (time(), file.filename))
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
             name = request.form['name']
             detail = request.form['content']
 
+            session = Session()
+
             new_example = Example(name=name,
                                   detail=detail,
                                   image_path=filepath,
-                                  category_id=1,
+                                  category_id=session.query(Category).filter(Category.name==category_name.title()).one().id,
                                   owner_id=1)
 
-            session = Session()
+
             session.add(new_example)
             session.commit()
 
@@ -109,6 +113,67 @@ def delete(category_name, example_id):
     return redirect(
         url_for('category',
                 **{'category_name': category_name}))
+
+@app.route('/<category_name>/<int:example_id>/edit', methods=['GET', 'POST'])
+def edit(category_name, example_id):
+    session = Session()
+    to_edit = session.query(Example).filter(Example.id == example_id)
+    example_to_edit = to_edit.one()
+
+    if request.method == "GET":
+
+        return render_template('create-edit.html',
+                               category=category_name,
+                               example=example,
+                               form_data=example_to_edit)
+
+    else:
+
+        name = request.form['name']
+        detail = request.form['content']
+
+        def allowed_file(filename):
+            return '.' in filename and \
+                   filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+        if 'image' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['image']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            to_edit.update({'name': name,
+                            'detail': detail})
+            session.commit()
+            return redirect(
+                url_for('example',
+                        **{'category_name': category_name,
+                           'example_id': example_id}))
+        elif file and allowed_file(file.filename):
+            print "FILE ALL GOOD"
+            os.remove(example_to_edit.image_path)
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(filepath)
+
+
+            to_edit.update({'name': name,
+                            'detail': detail,
+                            'image_path': filepath})
+
+            session.commit()
+
+
+            return redirect(
+                url_for('example',
+                        **{'category_name': category_name,
+                           'example_id': example_id}))
+        else:
+            flash('Invalid file')
+            return redirect(request.url)
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
