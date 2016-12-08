@@ -11,8 +11,7 @@ CREATE TABLE examples
     category_id INTEGER REFERENCES categories(id),
     name TEXT NOT NULL,
     detail TEXT,
-    year_from INTEGER,
-    year_to INTEGER,
+    year INTEGER,
     image_path TEXT,
     creator_email TEXT
 );

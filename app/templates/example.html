@@ -7,7 +7,12 @@
       <img class="context-image" src="/{{example.image_path}}">
     </div>
     <div class="small-6 columns">
-      <h1 class="example-title text-left"><span class="example-date">{{example.year_from}}</span> {{example.name}} </h1>
+      <h1 class="example-title text-left">
+          {% if example.year %}
+          <span class="example-date">{{example.year}}</span>
+          {% else %}
+          <span class="example-date">Unknown</span>
+          {% endif %} {{example.name}} </h1>
 
       {% for paragraph in example.detail.split("\n") %}
 
@@ -20,10 +25,6 @@
         <p>{{paragraph}}</p>
 
         {% endif %}
-
-
-
-
 
       {% endfor %}
     </div>

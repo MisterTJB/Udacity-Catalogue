@@ -20,7 +20,6 @@ class Example(Base):
     category = relationship(Category)
     name = Column(String, nullable=False)
     detail = Column(String)
-    year_from = Column(Integer)
-    year_to = Column(Integer)
+    year = Column(Integer)
     image_path = Column(String)
     creator_email = Column(String)

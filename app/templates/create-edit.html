@@ -17,14 +17,9 @@
         <div class="row">
           <div class="small-6 columns" style="padding: 0;">
             <div class="small-6 columns">
-            <label for="year_from">Year From</label>
-            <input type="text" id="year_from" name="year_from" value="{{form_data.year_from}}" placeholder="YYYY">
-          </div>
-          <div class="small-6 columns">
-            <label for="year_to">Year To</label>
-            <input type="text" id="year_to" name="year_to" value="{{form_data.year_to}}" placeholder="YYYY">
-          </div>
-
+              <label for="year">Year</label>
+              <input type="text" id="year" name="year" value="{{form_data.year}}" placeholder="YYYY">
+            </div>
           </div>
 
         </div>
@@ -46,18 +41,24 @@
             <input type="file" id="image" class="file-input" name="image">
           </div>
         </div>
-        <input type="submit" class="button" value="Submit">
+        <div class="row columns">
+            <input type="submit" class="button" value="Submit">
+        </div>
+        <div class="row">
+            {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="flashes">
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+          </div>
       </form>
+
     </div>
   </div>
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
-    {% for message in messages %}
-      <li>{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+
 
 {% endblock %}
