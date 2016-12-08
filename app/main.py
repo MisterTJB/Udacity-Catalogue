@@ -33,7 +33,7 @@ def category(category_name):
                            category=category_name,
                            examples=category_members)
 
-@app.route('/<category_name>/<int:example_id>')
+@app.route('/<category_name>/<int:example_id>/')
 def example(category_name, example_id):
     session = Session()
     example = session.query(Example).filter(Example.id == example_id).one()
@@ -76,9 +76,6 @@ def new(category_name):
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
-            print url_for('uploaded_file',
-                                    filename=filename)
-
             name = request.form['name']
             detail = request.form['content']
 
@@ -98,6 +95,20 @@ def new(category_name):
         else:
             flash('Invalid file')
             return redirect(request.url)
+
+
+@app.route('/<category_name>/<int:example_id>/delete')
+def delete(category_name, example_id):
+    session = Session()
+    to_remove = session.query(Example).filter(Example.id == example_id)
+    example_to_remove = to_remove.one()
+    to_remove.delete()
+    session.commit()
+    os.remove(example_to_remove.image_path)
+
+    return redirect(
+        url_for('category',
+                **{'category_name': category_name}))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
