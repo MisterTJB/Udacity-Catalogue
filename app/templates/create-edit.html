@@ -5,7 +5,7 @@
   <div class="row">
     <div class="small-8 small-centered columns input-form">
 
-      <form method="post" enctype=multipart/form-data target="" id="form">
+      <form method="post" enctype=multipart/form-data action="{{url_for('new', **{'category_name': category})}}" id="form">
 
         <div class="row">
           <div class="small-12 columns">
@@ -33,7 +33,7 @@
           {% if form_data.image_path %}
           <div class="small-4 columns">
             <label for="current-image">Current Image</label>
-            <img id="current-image" src="/{{form_data.image_path}}">
+            <img id="current-image" src="{{url_for('uploaded_file', **{'filename': form_data.image_path})}}">
           </div>
           {% endif %}
           <div class="small-8 columns">

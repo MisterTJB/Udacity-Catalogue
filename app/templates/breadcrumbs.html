@@ -2,15 +2,15 @@
         <div class="small-10 columns">
           <nav aria-label="You are here:" role="navigation">
             <ul class="breadcrumbs">
-              <li><a href="/">home</a></li>
+              <li><a href="{{url_for('index')}}">home</a></li>
 
               {% if example %}
 
-              <li><a href="/{{category}}">{{category}}</a></li>
+              <li><a href="{{url_for('category', **{'category_name': category}) }}">{{category}}</a></li>
 
               {% if form_data %}
 
-              <li><a href="/{{category}}/{{form_data.id}}">{{form_data.name}}</a> </li>
+              <li><a href="{{url_for('example', **{'category_name': category, 'example_id': example.id}) }}">{{form_data.name}}</a> </li>
 
               {% else %}
 
@@ -31,12 +31,12 @@
           <div class="login text-right">
             {% if example %}
 
-            <a href="edit">Edit</a>
-            <a href="delete">Delete</a>
+            <a href="{{url_for('edit', **{'category_name': category, 'example_id': example_id})}}">Edit</a>
+            <a href="{{url_for('delete', **{'category_name': category, 'example_id': example_id})}}">Delete</a>
 
             {% elif examples or category %}
 
-            <a href="new">New</a>
+            <a href="{{url_for('new', **{'category_name': category})}}">New</a>
 
             {% endif %}
             <div id="signInButton">

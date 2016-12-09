@@ -7,7 +7,7 @@
       {% for example in examples %}
 
       <div class="column instance">
-        <a href="{{example.id}}">
+        <a href="{{url_for('example', **{'category_name': category, 'example_id': example.id})}}">
           {% if example.year %}
           <h4 class="instance-date text-right">{{example.year}}</h4>
           {% else %}

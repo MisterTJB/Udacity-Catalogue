@@ -7,10 +7,10 @@
 
       {% for category in categories %}
        <div class="column category">
-        <a href="{{category.name.lower()}}">
+        <a href="{{url_for('category', **{'category_name': category.name} )}}">
           <div class="outer">
             <div class="im-col" >
-              <img src="{{category.image_path}}">
+              <img src="{{url_for('static', filename=category.image_path)}}">
             </div>
             <div class="text-overlay">
               <h2 class="category-text">{{category.name.lower()}}</h2>
