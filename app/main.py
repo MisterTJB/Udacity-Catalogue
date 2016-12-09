@@ -1,7 +1,6 @@
 import os
 import httplib2
 import json
-import requests
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 from flask import Flask, request, flash, redirect, url_for, send_from_directory
 from flask import render_template
@@ -13,9 +12,20 @@ from sqlalchemy.orm import sessionmaker
 from model.catalogue import *
 from functools import wraps
 
-# Configure file upload parameters
+# Configure file upload parameters and helpers
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+
+def allowed_file(filename):
+    """
+    Determine whether a file has a valid extension
+
+    :param filename: The name of a given file
+    :return: True if the filename is allowed; False otherwise
+    """
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 # Load OAuth client id from secret.json
 CLIENT_ID = json.loads(open('secret.json', 'r').read())['web']['client_id']
@@ -64,6 +74,46 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if not 'email' in login_session:
             return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def category_must_exist(f):
+    """
+    Decorator for views rendering categories that ensures that
+    the category actually exists
+
+    If a category exists, continue with the request; otherwise,
+    redirect to the main page
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        session = Session()
+        matching_categories = session.query(Category).filter(
+            Category.name == kwargs['category_name'].title()).all()
+
+        if len(matching_categories) != 1:
+            return redirect(url_for('index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def example_must_exist(f):
+    """
+    Decorator for views rendering examples that ensures that
+    the example actually exists
+
+    If a example exists, continue with the request; otherwise,
+    redirect to the enclosing category
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        session = Session()
+        matching_examples = session.query(Example).filter(
+            Example.id == kwargs['example_id']).all()
+
+        if len(matching_examples) != 1:
+            return redirect(url_for('category', **{'category_name':
+                                                       kwargs['category_name']}))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -143,6 +193,13 @@ def gconnect():
 @app.route('/gdisconnect')
 @login_required
 def gdisconnect():
+    """
+    End an authenticated session
+
+    Revokes the Google access token and invalidates the session
+    """
+
+    # Revoke the access token
     access_token = login_session['access_token']
     if access_token is None:
         print 'Access Token is None'
@@ -151,33 +208,42 @@ def gdisconnect():
         return response
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % \
           login_session['access_token']
-    print url
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
-    print 'result is '
-    print result
+
+    # Invalidate the session
     if result['status'] == '200':
         del login_session['access_token']
         del login_session['email']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
-    else:
 
+    else:
         response = make_response(
             json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
-
 @app.route('/')
 def index():
+    """
+    Handler for the main page, listing available categories
+    """
     session = Session()
     categories = session.query(Category).all()
     return render_template('index.html', categories=categories)
 
+
 @app.route('/<category_name>/')
+@category_must_exist
 def category(category_name):
+    """
+    Handler for category pages
+
+    Renders a list of Examples within a category, or redirects to the main
+    page if no such category exists
+    """
     session = Session()
     category_members = session.query(Example).\
         join(Example.category, aliased=True).filter_by(name=category_name.title()).all()
@@ -186,82 +252,129 @@ def category(category_name):
                            examples=category_members)
 
 @app.route('/<category_name>/<int:example_id>/')
+@example_must_exist
 def example(category_name, example_id):
+    """
+    Handler for an Example page
+
+    Renders an Example, or redirects to the enclosing category if
+    an Example does not exist with the passed in example_id
+    """
     session = Session()
-    example = session.query(Example).filter(Example.id == example_id).one()
+    example_row = session.query(Example).filter(Example.id == example_id).one()
     return render_template('example.html',
                            category=category_name,
-                           example=example)
+                           example_id=example_id,
+                           example=example_row)
+
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    """
+    Handler for the uploaded files directory.
+
+    Returns a file from the uploads directory
+    """
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
 
+
 @app.route('/<category_name>/new', methods=['GET', 'POST'])
+@category_must_exist
 @login_required
 def new(category_name):
+    """
+    Handler for creating new Examples
 
-    if not 'username' in login_session:
-        print "NOT LOGGED IN"
-        return redirect(url_for('index'))
+    Handles GET requests, which render a form for creating new Examples,
+    and POST requests, which handle the completed form.
+    """
 
     if request.method == 'GET':
         return render_template('create-edit.html',
                                category=category_name,
-                               example=example,
                                form_data=None)
 
-    else:
+    if request.method == 'POST':
 
-        def allowed_file(filename):
-            return '.' in filename and \
-                   filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+        validation_errors = []
 
-        if 'image' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+        name = request.form['name']
+        detail = request.form['content']
+        year = request.form['year']
+
+        year_int = None
+        if year.isdigit():
+            year_int = int(year)
+
+        if len(name) == 0:
+            validation_errors.append('A title is required')
+
+        # Validate submitted file
         file = request.files['image']
-        # if user does not select file, browser also
-        # submit a empty part without filename
         if file.filename == '':
-            print file.filename
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            print "FILE ALL GOOD"
-            from time import time
-            filename = secure_filename("%f_%s" % (time(), file.filename))
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+            validation_errors.append('An image is required')
+        if not allowed_file(file.filename) and file.filename != '':
+            validation_errors.append(file.filename + ' is not a valid filename')
 
-            name = request.form['name']
-            detail = request.form['content']
+        # If there are any validation errors, rerender the page with errors
+        if len(validation_errors) > 0:
+            for error in validation_errors:
+                flash(error)
+            return render_template('create-edit.html',
+                               category=category_name,
+                               form_data={
+                                   'name': name,
+                                   'detail': detail,
+                                   'year': year
+                               })
 
-            session = Session()
+        # Upload the file
+        from time import time
+        filename = secure_filename("%f_%s" % (time(), file.filename))
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
 
-            new_example = Example(name=name,
-                                  detail=detail,
-                                  image_path=filepath,
-                                  category_id=session.query(Category).filter(Category.name==category_name.title()).one().id,
-                                  owner_id=1)
+        # Insert the new Example in the database
+        session = Session()
+        new_example = Example(name=name,
+                              detail=detail,
+                              year=year_int,
+                              image_path=filename,
+                              category_id=session.query(Category).filter(
+                                  Category.name==category_name.title()).one().id,
+                              creator_email=login_session['email'])
 
+        session.add(new_example)
+        session.commit()
 
-            session.add(new_example)
-            session.commit()
-
-            return redirect(
-                url_for('category',
-                        **{'category_name': category_name}))
-        else:
-            flash('Invalid file')
-            return redirect(request.url)
+        return redirect(
+            url_for('category',
+                    **{'category_name': category_name}))
 
 
 @app.route('/<category_name>/<int:example_id>/delete')
+@category_must_exist
+@example_must_exist
 @login_required
 @authorship_required
 def delete(category_name, example_id):
+    """
+    Handler for deleting Examples
+
+    Deletes an Example from the database, and its image file from the
+    uploads directory.
+
+    In order for a Delete to be executed, the Example must exist in the
+    specified category; additionally, the initiator must be signed in as
+    the user that created the Example.
+
+    If these constraints are not satisfied, the user is redirected to a
+    sensible page depending on the constraint that fails (c.f. decorator
+    functions)
+
+    A successful delete redirects the user to the enclosing category
+    """
     session = Session()
     to_remove = session.query(Example).filter(Example.id == example_id)
     example_to_remove = to_remove.one()
@@ -273,7 +386,10 @@ def delete(category_name, example_id):
         url_for('category',
                 **{'category_name': category_name}))
 
+
 @app.route('/<category_name>/<int:example_id>/edit', methods=['GET', 'POST'])
+@category_must_exist
+@example_must_exist
 @login_required
 @authorship_required
 def edit(category_name, example_id):
@@ -285,7 +401,8 @@ def edit(category_name, example_id):
 
         return render_template('create-edit.html',
                                category=category_name,
-                               example=example,
+                               example_id=example_id,
+                               example=example_to_edit,
                                form_data=example_to_edit)
 
     else:

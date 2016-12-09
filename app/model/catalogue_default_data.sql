@@ -4,7 +4,7 @@ INSERT INTO categories (name, image_path) VALUES
   ('Furniture', 'img/furniture.png'),
   ('Design', 'img/design.png'),
   ('Typography', 'img/typography.png'),
-  ('People', 'img/people.png');
+  ('Exhibitions', 'img/exhibitions.png');
 
 INSERT INTO examples (category_id,
                       name,
