@@ -39,12 +39,15 @@
             <a href="{{url_for('new', **{'category_name': category})}}">New</a>
 
             {% endif %}
+
+            {% if session.email %}
+            <a href="{{url_for('gdisconnect')}}">Log Out</a>
+            {% else %}
             <div id="signInButton">
           <span class="g-signin"
             data-scope="email"
             data-clientid="407235018168-9kpf9phnb4u91lt9i3ge1qjpbs6p2eik.apps.googleusercontent.com"
             data-redirecturi="postmessage"
-            data-accesstype="offline"
             data-cookiepolicy="single_host_origin"
             data-callback="signInCallback"
             data-approvalprompt="force"
@@ -54,6 +57,7 @@
           </span>
         </div>
           </div>
+          {% endif %}
 
         </div>
       </div>
