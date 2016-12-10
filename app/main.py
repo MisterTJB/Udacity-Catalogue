@@ -56,10 +56,11 @@ def authorship_required(f):
         current_user_email = login_session['email']
         results = session.query(Example).filter(
             Example.id == example_id, Example.creator_email == current_user_email).all()
-
+        session.close()
         if len(results) == 0:
             return redirect(url_for('category', **kwargs))
         return f(*args, **kwargs)
+
     return decorated_function
 
 def login_required(f):
@@ -90,7 +91,7 @@ def category_must_exist(f):
         session = Session()
         matching_categories = session.query(Category).filter(
             Category.name == kwargs['category_name'].title()).all()
-
+        session.close()
         if len(matching_categories) != 1:
             return redirect(url_for('index'))
         return f(*args, **kwargs)
@@ -109,7 +110,7 @@ def example_must_exist(f):
         session = Session()
         matching_examples = session.query(Example).filter(
             Example.id == kwargs['example_id']).all()
-
+        session.close()
         if len(matching_examples) != 1:
             return redirect(url_for('category', **{'category_name':
                                                        kwargs['category_name']}))
@@ -176,6 +177,7 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+
     # Store the access token in the session for later use.
     login_session['access_token'] = credentials.access_token
     login_session['gplus_id'] = gplus_id
@@ -185,11 +187,12 @@ def gconnect():
     response = make_response(
             json.dumps('Successful sign in'),
             200)
+    response.headers['Content-Type'] = 'application/json'
 
     return response
 
 
-@app.route('/gdisconnect')
+@app.route('/gdisconnect', methods=['POST'])
 @login_required
 def gdisconnect():
     """
@@ -213,6 +216,7 @@ def gdisconnect():
     # Invalidate the session
     if result['status'] == '200':
         del login_session['access_token']
+        del login_session['gplus_id']
         del login_session['email']
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
@@ -231,6 +235,7 @@ def index():
     """
     session = Session()
     categories = session.query(Category).all()
+    session.close()
     return render_template('index.html', categories=categories)
 
 
@@ -246,6 +251,7 @@ def category(category_name):
     session = Session()
     category_members = session.query(Example).\
         join(Example.category, aliased=True).filter_by(name=category_name.title()).all()
+    session.close()
     return render_template('category.html',
                            category=category_name,
                            examples=category_members)
@@ -261,6 +267,7 @@ def example(category_name, example_id):
     """
     session = Session()
     example_row = session.query(Example).filter(Example.id == example_id).one()
+    session.close()
     return render_template('example.html',
                            category=category_name,
                            example_id=example_id,
@@ -346,6 +353,7 @@ def new(category_name):
 
         session.add(new_example)
         session.commit()
+        session.close()
 
         return redirect(
             url_for('category',
@@ -379,7 +387,8 @@ def delete(category_name, example_id):
     example_to_remove = to_remove.one()
     to_remove.delete()
     session.commit()
-    os.remove(os.join(UPLOAD_FOLDER, example_to_remove.image_path))
+    session.close()
+    os.remove(os.path.join(UPLOAD_FOLDER, example_to_remove.image_path))
 
     return redirect(
         url_for('category',
@@ -445,7 +454,8 @@ def edit(category_name, example_id):
                            'example_id': example_id}))
 
         elif file and allowed_file(file.filename):
-            os.remove(example_to_edit.image_path)
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'],
+                                   example_to_edit.image_path))
             # Upload the file
             from time import time
             filename = secure_filename("%f_%s" % (time(), file.filename))
@@ -456,7 +466,7 @@ def edit(category_name, example_id):
             to_edit.update({'name': name,
                             'detail': detail,
                             'year': year_int,
-                            'image_path': filepath})
+                            'image_path': filename})
 
             session.commit()
 
@@ -464,6 +474,7 @@ def edit(category_name, example_id):
                 url_for('example',
                         **{'category_name': category_name,
                            'example_id': example_id}))
+    session.close()
 
 
 
