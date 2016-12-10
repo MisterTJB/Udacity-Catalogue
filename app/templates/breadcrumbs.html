@@ -29,7 +29,7 @@
         </div>
         <div class="small-2 columns">
           <div class="login text-right">
-            {% if example %}
+            {% if example and example.creator_email == session.email%}
 
             <a href="{{url_for('edit', **{'category_name': category, 'example_id': example_id})}}">Edit</a>
             <a href="{{url_for('delete', **{'category_name': category, 'example_id': example_id})}}">Delete</a>
@@ -41,9 +41,24 @@
             {% endif %}
 
             {% if session.email %}
-            <a href="{{url_for('gdisconnect')}}">Log Out</a>
+            <a id="logout" onclick="signOut()">Log Out</a>
+              <div id="signInButton" hidden>
+          <span class="g-signin"
+            data-scope="email"
+            data-clientid="407235018168-9kpf9phnb4u91lt9i3ge1qjpbs6p2eik.apps.googleusercontent.com"
+            data-redirecturi="postmessage"
+            data-cookiepolicy="single_host_origin"
+            data-callback="signInCallback"
+            data-approvalprompt="force"
+          data-width="50"
+          data-height="50"
+          data-longtitle="false">
+          </span>
+        </div>
+          </div>
             {% else %}
-            <div id="signInButton">
+            <a id="logout" onclick="signOut()">Log Out</a>
+            <div id="signInButton" hidden>
           <span class="g-signin"
             data-scope="email"
             data-clientid="407235018168-9kpf9phnb4u91lt9i3ge1qjpbs6p2eik.apps.googleusercontent.com"
@@ -58,6 +73,7 @@
         </div>
           </div>
           {% endif %}
+        <div id="result"></div>
 
         </div>
       </div>
