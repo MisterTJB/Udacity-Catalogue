@@ -52,7 +52,6 @@ def authorship_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         session = Session()
-
         example_id = kwargs['example_id']
         current_user_email = login_session['email']
         results = session.query(Example).filter(
@@ -72,7 +71,7 @@ def login_required(f):
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not 'email' in login_session:
+        if 'email' not in login_session:
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
@@ -380,7 +379,7 @@ def delete(category_name, example_id):
     example_to_remove = to_remove.one()
     to_remove.delete()
     session.commit()
-    os.remove(example_to_remove.image_path)
+    os.remove(os.join(UPLOAD_FOLDER, example_to_remove.image_path))
 
     return redirect(
         url_for('category',
@@ -405,22 +404,37 @@ def edit(category_name, example_id):
                                example=example_to_edit,
                                form_data=example_to_edit)
 
-    else:
+    elif request.method == "POST":
+
+        validation_errors = []
 
         name = request.form['name']
         detail = request.form['content']
-        year_from = request.form['year_from']
+        year = request.form['year']
 
-        def allowed_file(filename):
-            return '.' in filename and \
-                   filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+        year_int = None
+        if year.isdigit():
+            year_int = int(year)
 
-        if 'image' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
+        if len(name) == 0:
+            validation_errors.append('A title is required')
+
+        # Validate submitted file
         file = request.files['image']
-        # if user does not select file, browser also
-        # submit a empty part without filename
+        if not allowed_file(file.filename) and file.filename != '':
+            validation_errors.append(file.filename + ' is not a valid filename')
+
+        # If there are any validation errors, rerender the page with errors
+        if len(validation_errors) > 0:
+            for error in validation_errors:
+                flash(error)
+            return render_template('create-edit.html',
+                                   category=category_name,
+                                   form_data={
+                                       'name': name,
+                                       'detail': detail,
+                                       'year': year
+                                   })
         if file.filename == '':
             to_edit.update({'name': name,
                             'detail': detail})
@@ -429,29 +443,27 @@ def edit(category_name, example_id):
                 url_for('example',
                         **{'category_name': category_name,
                            'example_id': example_id}))
+
         elif file and allowed_file(file.filename):
-            print "FILE ALL GOOD"
             os.remove(example_to_edit.image_path)
-            filename = secure_filename(file.filename)
+            # Upload the file
+            from time import time
+            filename = secure_filename("%f_%s" % (time(), file.filename))
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
 
             to_edit.update({'name': name,
                             'detail': detail,
-                            'year_from': year_from,
+                            'year': year_int,
                             'image_path': filepath})
 
             session.commit()
-
 
             return redirect(
                 url_for('example',
                         **{'category_name': category_name,
                            'example_id': example_id}))
-        else:
-            flash('Invalid file')
-            return redirect(request.url)
 
 
 
