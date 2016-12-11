@@ -21,8 +21,11 @@ def allowed_file(filename):
     """
     Determine whether a file has a valid extension
 
-    :param filename: The name of a given file
-    :return: True if the filename is allowed; False otherwise
+    Args:
+        - filename: The name of a given file
+
+    Returns:
+        True if the filename is allowed; False otherwise
     """
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -63,6 +66,7 @@ def authorship_required(f):
 
     return decorated_function
 
+
 def login_required(f):
     """
     Decorator for views to ensure that a user is authenticated.
@@ -96,6 +100,7 @@ def category_must_exist(f):
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
+
 
 def example_must_exist(f):
     """
@@ -177,7 +182,6 @@ def gconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-
     # Store the access token in the session for later use.
     login_session['access_token'] = credentials.access_token
     login_session['gplus_id'] = gplus_id
@@ -228,6 +232,7 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+
 @app.route('/')
 def index():
     """
@@ -256,6 +261,7 @@ def category(category_name):
                            category=category_name,
                            examples=category_members)
 
+
 @app.route('/<category_name>/<int:example_id>/')
 @example_must_exist
 def example(category_name, example_id):
@@ -279,11 +285,70 @@ def uploaded_file(filename):
     """
     Handler for the uploaded files directory.
 
-    Returns a file from the uploads directory
+    Returns:
+        A file from the uploads directory
     """
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
 
+def validate_form(request, image_required=True):
+    """
+    Validates the form for new Examples
+
+    Args:
+        - request: The request object, containing form data
+        - image_required: True if validation should require an image to have
+        been uploaded
+
+    Returns:
+        A tuple of values retrieved from the form:
+            name: String from the name field
+            detail: String from the detail field
+            year: String from the year field
+            year_int: Int representation of year (if valid)
+            file: The uploaded file
+            validation_errors: A list of validation error statements
+    """
+    validation_errors = []
+
+    name = request.form['name']
+    detail = request.form['content']
+    year = request.form['year']
+
+    year_int = None
+    if year.isdigit():
+        year_int = int(year)
+
+    if len(name) == 0:
+        validation_errors.append('A name is required')
+
+    # Validate submitted file
+    file = request.files['image']
+    if file.filename == '' and image_required:
+        validation_errors.append('An image is required')
+    if not allowed_file(file.filename) and file.filename != '':
+        validation_errors.append(file.filename + ' is not a valid filename')
+
+    return name, detail, year, year_int, file, validation_errors
+
+
+def upload_file(file):
+    """
+    Creates a 'secure filename' for an uploaded file and saves it in the
+    appropriate directory
+
+    Args:
+        - file: The file, as submitted by the HTML form
+
+    Returns:
+        The secure filename (i.e. the identifier that the image will be
+        stored under in the UPLOAD_FOLDER
+    """
+    from time import time
+    filename = secure_filename("%f_%s" % (time(), file.filename))
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(filepath)
+    return filename
 
 @app.route('/<category_name>/new', methods=['GET', 'POST'])
 @category_must_exist
@@ -303,25 +368,7 @@ def new(category_name):
 
     if request.method == 'POST':
 
-        validation_errors = []
-
-        name = request.form['name']
-        detail = request.form['content']
-        year = request.form['year']
-
-        year_int = None
-        if year.isdigit():
-            year_int = int(year)
-
-        if len(name) == 0:
-            validation_errors.append('A name is required')
-
-        # Validate submitted file
-        file = request.files['image']
-        if file.filename == '':
-            validation_errors.append('An image is required')
-        if not allowed_file(file.filename) and file.filename != '':
-            validation_errors.append(file.filename + ' is not a valid filename')
+        name, detail, year, year_int, file, validation_errors = validate_form(request)
 
         # If there are any validation errors, rerender the page with errors
         if len(validation_errors) > 0:
@@ -336,10 +383,7 @@ def new(category_name):
                                })
 
         # Upload the file
-        from time import time
-        filename = secure_filename("%f_%s" % (time(), file.filename))
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(filepath)
+        filename = upload_file(file)
 
         # Insert the new Example in the database
         session = Session()
@@ -401,12 +445,18 @@ def delete(category_name, example_id):
 @login_required
 @authorship_required
 def edit(category_name, example_id):
+    """
+    Handler for editing an Example
+
+    Handles GET requests, which render a form for editing Examples,
+    and POST requests, which handle the completed form.
+    """
     session = Session()
     to_edit = session.query(Example).filter(Example.id == example_id)
     example_to_edit = to_edit.one()
 
     if request.method == "GET":
-
+        session.close()
         return render_template('create-edit.html',
                                category=category_name,
                                example_id=example_id,
@@ -415,23 +465,8 @@ def edit(category_name, example_id):
 
     elif request.method == "POST":
 
-        validation_errors = []
-
-        name = request.form['name']
-        detail = request.form['content']
-        year = request.form['year']
-
-        year_int = None
-        if year.isdigit():
-            year_int = int(year)
-
-        if len(name) == 0:
-            validation_errors.append('A title is required')
-
-        # Validate submitted file
-        file = request.files['image']
-        if not allowed_file(file.filename) and file.filename != '':
-            validation_errors.append(file.filename + ' is not a valid filename')
+        name, detail, year, year_int, file, validation_errors = validate_form(
+            request, image_required=False)
 
         # If there are any validation errors, rerender the page with errors
         if len(validation_errors) > 0:
@@ -442,26 +477,25 @@ def edit(category_name, example_id):
                                    form_data={
                                        'name': name,
                                        'detail': detail,
-                                       'year': year
+                                       'year': year,
+                                       'image_path': example_to_edit.image_path
                                    })
+
+        # If the file is unchanged, only update the text values
         if file.filename == '':
             to_edit.update({'name': name,
+                            'year': year_int,
                             'detail': detail})
             session.commit()
-            return redirect(
-                url_for('example',
-                        **{'category_name': category_name,
-                           'example_id': example_id}))
+            session.close()
 
+        # If the image file has been replaced, remove the old file and replace
+        # it with the new file in UPLOAD_FOLDER
         elif file and allowed_file(file.filename):
             os.remove(os.path.join(app.config['UPLOAD_FOLDER'],
                                    example_to_edit.image_path))
-            # Upload the file
-            from time import time
-            filename = secure_filename("%f_%s" % (time(), file.filename))
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
 
+            filename = upload_file(file)
 
             to_edit.update({'name': name,
                             'detail': detail,
@@ -469,30 +503,41 @@ def edit(category_name, example_id):
                             'image_path': filename})
 
             session.commit()
+            session.close()
 
-            return redirect(
-                url_for('example',
-                        **{'category_name': category_name,
-                           'example_id': example_id}))
-    session.close()
+        return redirect(
+            url_for('example',
+                    **{'category_name': category_name,
+                       'example_id': example_id}))
+
 
 
 @app.route("/catalogue.json")
 def json_endpoint():
+    """
+    Handler for representing the entire catalogue as JSON
+    """
     session = Session()
     res = session.query(Example).join(Example.category).all()
+
+    # Iterate through the result set and build a dictionary
     result_dict = {'Category' : {}}
     for result in res:
         if result.category.name not in result_dict['Category']:
             result_dict['Category'][result.category.name] = {}
             result_dict['Category'][result.category.name]['Examples'] = []
-            result_dict['Category'][result.category.name]['image_path'] = result.category.image_path
+            result_dict['Category'][result.category.name]['image_path'] = \
+                result.category.image_path
 
-        result_dict['Category'][result.category.name]['Examples'] += [result.serialize]
+        result_dict['Category'][result.category.name]['Examples'] \
+            += [result.serialize]
 
+    session.close()
+
+    # Serialise the dictionary and build a JSON response
     response = make_response(
-        json.dumps(result_dict, sort_keys=True, indent=4, separators=(',', ': ')),
-        200)
+        json.dumps(result_dict, sort_keys=True,
+                   indent=4, separators=(',', ': ')), 200)
     response.headers['Content-Type'] = 'application/json'
 
     return response
