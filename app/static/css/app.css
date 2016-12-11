@@ -32,7 +32,6 @@ body {
   box-sizing: content-box;
   margin-top: 90%;
   padding-left: 5%;
-  /*padding-right: 5%;*/
   font-size: 2.5vw;
   font-variant: small-caps;
   font-family: 'Helvetica', sans-serif;
@@ -63,14 +62,6 @@ font-size: 11px;
 text-transform: uppercase;
 }
 
-/*.instance:nth-child(odd) {
-  -webkit-transform: rotate(30deg);
-}
-
-.instance:nth-child(even) {
-  -webkit-transform: rotate(-30deg);
-}*/
-
 .instance {
   -webkit-transform: rotate(45deg);
   border: 1px solid red;
@@ -97,8 +88,6 @@ text-transform: uppercase;
 }
 
 .instance .instance-name {
-  /*-webkit-transform: rotate(-90deg) translateX(15%);*/
-  /*text-transform: uppercase;*/
   font-family: 'Helvetica', sans-serif;
   font-size: 1.5vw;
   font-weight: lighter;
@@ -126,7 +115,6 @@ text-transform: uppercase;
     font-size: 2.5vw;
   }
 }
-
 
 .instance:hover {
   position: relative;
@@ -162,7 +150,6 @@ p {
   max-width: 45vw;
   z-index: 2;
   -webkit-transition: 0.5s;
-
 }
 
 .feature {
