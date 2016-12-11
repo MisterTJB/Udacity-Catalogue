@@ -11,6 +11,15 @@ class Category(Base):
     name = Column(String, nullable=False)
     image_path = Column(String)
 
+    @property
+    def serialize(self):
+        """Return object data in easily serializeable format"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'image_path': "static/" + self.image_path
+        }
+
 
 
 class Example(Base):
@@ -23,3 +32,15 @@ class Example(Base):
     year = Column(Integer)
     image_path = Column(String)
     creator_email = Column(String)
+
+    @property
+    def serialize(self):
+        """Return object data in easily serializeable format"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'detail': self.detail,
+            'year': self.year,
+            'image_path': "uploads/" + self.image_path,
+            'creator_email': self.creator_email
+        }

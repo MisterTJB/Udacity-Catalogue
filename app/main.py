@@ -1,6 +1,7 @@
 import os
 import httplib2
 import json
+from collections import defaultdict
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 from flask import Flask, request, flash, redirect, url_for, send_from_directory
 from flask import render_template
@@ -477,6 +478,25 @@ def edit(category_name, example_id):
     session.close()
 
 
+@app.route("/catalogue.json")
+def json_endpoint():
+    session = Session()
+    res = session.query(Example).join(Example.category).all()
+    result_dict = {'Category' : {}}
+    for result in res:
+        if result.category.name not in result_dict['Category']:
+            result_dict['Category'][result.category.name] = {}
+            result_dict['Category'][result.category.name]['Examples'] = []
+            result_dict['Category'][result.category.name]['image_path'] = result.category.image_path
+
+        result_dict['Category'][result.category.name]['Examples'] += [result.serialize]
+
+    response = make_response(
+        json.dumps(result_dict, sort_keys=True, indent=4, separators=(',', ': ')),
+        200)
+    response.headers['Content-Type'] = 'application/json'
+
+    return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
