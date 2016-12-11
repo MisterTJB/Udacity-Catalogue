@@ -1,79 +1,50 @@
 <div class="row">
-        <div class="small-10 columns">
-          <nav aria-label="You are here:" role="navigation">
+    <div class="small-6 align-left columns">
+        <nav aria-label="You are here:" role="navigation">
             <ul class="breadcrumbs">
-              <li><a href="{{url_for('index')}}">home</a></li>
+                <li><a href="{{url_for('index')}}">home</a></li>
 
-              {% if example %}
+                {% if example %}
 
-              <li><a href="{{url_for('category', **{'category_name': category}) }}">{{category}}</a></li>
+                <li><a href="{{url_for('category', **{'category_name': category}) }}">{{category}}</a></li>
 
-              {% if form_data %}
+                {% if form_data %}
 
-              <li><a href="{{url_for('example', **{'category_name': category, 'example_id': example.id}) }}">{{form_data.name}}</a> </li>
+                <li><a href="{{url_for('example', **{'category_name': category, 'example_id': example.id}) }}">{{form_data.name}}</a> </li>
 
-              {% else %}
+                {% else %}
 
-              <li><span class="show-for-sr">Current: </span> {{example.name}} </li>
+                <li><span class="show-for-sr">Current: </span> {{example.name}} </li>
 
-              {% endif %}
+                {% endif %}
 
-              {% elif examples or category %}
+                {% elif examples or category %}
 
-              <li><span class="show-for-sr">Current: </span> {{category}}</li>
+                <li><span class="show-for-sr">Current: </span> {{category}}</li>
 
-              {% endif %}
+                {% endif %}
 
             </ul>
-          </nav>
-        </div>
-        <div class="small-2 columns">
-          <div class="login text-right">
+        </nav>
+    </div>
+    <div class="small-6 control-panel columns">
+        <ul class="breadcrumbs">
             {% if example and example.creator_email == session.email%}
 
-            <a href="{{url_for('edit', **{'category_name': category, 'example_id': example_id})}}">Edit</a>
-            <a href="{{url_for('delete', **{'category_name': category, 'example_id': example_id})}}">Delete</a>
+            <li><a href="{{url_for('edit', **{'category_name': category, 'example_id': example_id})}}">Edit</a></li>
+            <li><a href="{{url_for('delete', **{'category_name': category, 'example_id': example_id})}}">Delete</a></li>
+            {% elif examples or category and session.email %}
 
-            {% elif examples or category %}
-
-            <a href="{{url_for('new', **{'category_name': category})}}">New</a>
+            <li><a href="{{url_for('new', **{'category_name': category})}}">New</a></li>
 
             {% endif %}
 
             {% if session.email %}
-            <a id="logout" onclick="signOut()">Log Out</a>
-              <div id="signInButton" hidden>
-          <span class="g-signin"
-            data-scope="email"
-            data-clientid="407235018168-9kpf9phnb4u91lt9i3ge1qjpbs6p2eik.apps.googleusercontent.com"
-            data-redirecturi="postmessage"
-            data-cookiepolicy="single_host_origin"
-            data-callback="signInCallback"
-            data-approvalprompt="force"
-          data-width="50"
-          data-height="50"
-          data-longtitle="false">
-          </span>
-        </div>
-          </div>
+            <li><a id="logout" onclick="signOut()">Log Out</a></li>
             {% else %}
-            <a id="logout" onclick="signOut()">Log Out</a>
-            <div id="signInButton" hidden>
-          <span class="g-signin"
-            data-scope="email"
-            data-clientid="407235018168-9kpf9phnb4u91lt9i3ge1qjpbs6p2eik.apps.googleusercontent.com"
-            data-redirecturi="postmessage"
-            data-cookiepolicy="single_host_origin"
-            data-callback="signInCallback"
-            data-approvalprompt="force"
-          data-width="50"
-          data-height="50"
-          data-longtitle="false">
-          </span>
-        </div>
-          </div>
-          {% endif %}
-        <div id="result"></div>
+            <li><a id="login" onclick="signIn()">Log In</a></li>
+            {% endif %}
+        </ul>
 
-        </div>
-      </div>
+    </div>
+</div>

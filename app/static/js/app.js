@@ -1,11 +1,22 @@
 $(document).foundation()
 
+function start(){
+
+gapi.load('auth2', function(){
+      // Retrieve the singleton for the GoogleAuth library and set up the client.
+      auth2 = gapi.auth2.init({
+        client_id: '407235018168-9kpf9phnb4u91lt9i3ge1qjpbs6p2eik.apps.googleusercontent.com',
+        cookiepolicy: 'single_host_origin'
+      });
+    });
+}
+
+function signIn() {
+    auth2.grantOfflineAccess({'redirect_uri': 'postmessage'}).then(signInCallback);
+  };
+
 function signInCallback(authResult) {
   if (authResult['code']) {
-    // Hide the sign-in button now that the user is authorized
-    $('#signInButton').hide();
-    //  Send the one-time-use code to the server, if the server responds,
-    //  write a 'login successful' message
     $.ajax({
       type: 'POST',
       url: '/gconnect',
@@ -15,13 +26,11 @@ function signInCallback(authResult) {
       success: function(result) {
         // Handle or verify the server response if necessary.
         if (result) {
-            $('#signInButton').hide();
-            $('#logout').show()
+            location.reload(true);
       } else if (authResult['error']) {
             alert('There was an error: ' + authResult['error']);
-            $('#signInButton').disable();
   } else {
-        $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+        alert('Failed to make a server-side call. Check your configuration and console.');
          }
       }
 
@@ -32,8 +41,7 @@ function signOut() {
       type: 'POST',
       url: '/gdisconnect',
       success: function(result) {
-          $('#logout').hide();
-          $('#signInButton').show();
+          location.reload(true);
 
       },
       fail: function(result){

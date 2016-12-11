@@ -213,3 +213,7 @@ input[type=file] {
   font-weight: lighter;
   color: crimson;
 }
+
+.control-panel .breadcrumbs {
+  float:right;
+}
