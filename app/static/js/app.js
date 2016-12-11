@@ -24,17 +24,14 @@ function signInCallback(authResult) {
       data: authResult['code'],
       contentType: 'application/octet-stream; charset=utf-8',
       success: function(result) {
-        // Handle or verify the server response if necessary.
-        if (result) {
-            location.reload(true);
-      } else if (authResult['error']) {
-            alert('There was an error: ' + authResult['error']);
-  } else {
-        alert('Failed to make a server-side call. Check your configuration and console.');
-         }
+        location.reload(true);
+      },
+        error: function(result){
+          alert("An error occurred while logging in. Try again");
       }
-
-  }); } }
+    }) ;
+  }
+}
 
 function signOut() {
     $.ajax({
@@ -44,7 +41,7 @@ function signOut() {
           location.reload(true);
 
       },
-      fail: function(result){
-          alert(result)
+      error: function(result){
+          alert("An error occurred while logging out. Try again");
       }
     })};

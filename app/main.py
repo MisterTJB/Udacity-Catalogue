@@ -1,7 +1,6 @@
 import os
 import httplib2
 import json
-from collections import defaultdict
 from oauth2client.client import flow_from_clientsecrets, FlowExchangeError
 from flask import Flask, request, flash, redirect, url_for, send_from_directory
 from flask import render_template
@@ -315,7 +314,7 @@ def new(category_name):
             year_int = int(year)
 
         if len(name) == 0:
-            validation_errors.append('A title is required')
+            validation_errors.append('A name is required')
 
         # Validate submitted file
         file = request.files['image']
