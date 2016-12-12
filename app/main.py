@@ -36,10 +36,10 @@ CLIENT_ID = json.loads(open('secret.json', 'r').read())['web']['client_id']
 # Configure application
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = 'some_secret'
+app.secret_key = 'ccb6a08d85c8c3ba3c81acdf035907e1058b7117bdc6bfabaad05b1317d542f5'
 
 # Establish a database engine and session factory
-engine = create_engine("postgresql://127.0.0.1:5432/catalogue")
+engine = create_engine("postgresql:///catalogue")
 Base.metadata.bind = engine
 Session = sessionmaker(bind=engine)
 
