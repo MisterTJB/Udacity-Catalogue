@@ -21,7 +21,6 @@ class Category(Base):
         }
 
 
-
 class Example(Base):
     __tablename__ = 'examples'
     id = Column(Integer, primary_key=True)
