@@ -511,7 +511,6 @@ def edit(category_name, example_id):
                        'example_id': example_id}))
 
 
-
 @app.route("/catalogue.json")
 def json_endpoint():
     """
@@ -521,7 +520,7 @@ def json_endpoint():
     res = session.query(Example).join(Example.category).all()
 
     # Iterate through the result set and build a dictionary
-    result_dict = {'Category' : {}}
+    result_dict = {'Category': {}}
     for result in res:
         if result.category.name not in result_dict['Category']:
             result_dict['Category'][result.category.name] = {}
