@@ -25,6 +25,27 @@ The project can be installed and run on a local machine, assuming that [Vagrant]
 
 Now, open a web browser and navigate to [localhost:5000](http://localhost:5000); if the set up process has been successful, you will see the homepage list six categories.
 
+### Troubleshooting
+
+The application has been tested on independent machines, and the shell script associated with the virtual machine successfully creates and populates the database in all case. Nonetheless, reviewers have encountered an issue where the database does not get created (i.e `sql.exc.OperationalError: database 'catalogue' does not exist`)
+
+![Error](./screenshots/error.png)
+
+This can be resolved by properly creating the `catalogue` database and importing the data. Assuming that you are connected to the Vagrant VM shell	 via SSH, recreate the `catalogue` database:
+
+1. `vagrant@vagrant-ubuntu-trusty-32:~$ dropdb catalogue`
+2. `vagrant@vagrant-ubuntu-trusty-32:~$ create catalogue`
+3. `vagrant@vagrant-ubuntu-trusty-32:~$ psql catalogue < /vagrant/app/model/catalogue.sql`
+
+Note that step one will fail if the `catalogue` database already exists – `createdb: database creation failed: ERROR:  database "catalogue" already exists
+` – continue with the subsequent steps nonetheless.
+
+Now, rerun the application from the Vagrant VM shell:
+
+1. `vagrant@vagrant-ubuntu-trusty-32:~$ cd /vagrant/app/`
+2. `vagrant@vagrant-ubuntu-trusty-32:/vagrant/app$ python main.py`
+
+
 ## Usage
 
 ### Read
