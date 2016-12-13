@@ -145,3 +145,7 @@ The format of the data will be:
 }
 					
 ```
+
+Likewise, a JSON representation of an arbitrary item can be accessed by appending `/json` to the URI for an item:
+
+![JSON for an item](./screenshots/item_json.png)
