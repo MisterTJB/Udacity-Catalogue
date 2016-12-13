@@ -36,7 +36,8 @@ CLIENT_ID = json.loads(open('secret.json', 'r').read())['web']['client_id']
 # Configure application
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = 'ccb6a08d85c8c3ba3c81acdf035907e1058b7117bdc6bfabaad05b1317d542f5'
+app.secret_key = \
+    'ccb6a08d85c8c3ba3c81acdf035907e1058b7117bdc6bfabaad05b1317d542f5'
 
 # Establish a database engine and session factory
 engine = create_engine("postgresql:///catalogue")
@@ -58,7 +59,8 @@ def authorship_required(f):
         example_id = kwargs['example_id']
         current_user_email = login_session['email']
         results = session.query(Example).filter(
-            Example.id == example_id, Example.creator_email == current_user_email).all()
+            Example.id == example_id,
+            Example.creator_email == current_user_email).all()
         session.close()
         if len(results) == 0:
             return redirect(url_for('category', **kwargs))
@@ -117,8 +119,8 @@ def example_must_exist(f):
             Example.id == kwargs['example_id']).all()
         session.close()
         if len(matching_examples) != 1:
-            return redirect(url_for('category', **{'category_name':
-                                                       kwargs['category_name']}))
+            return redirect(url_for(
+                'category', **{'category_name': kwargs['category_name']}))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -209,7 +211,8 @@ def gdisconnect():
     access_token = login_session['access_token']
     if access_token is None:
         print 'Access Token is None'
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(
+            json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % \
@@ -255,7 +258,8 @@ def category(category_name):
     """
     session = Session()
     category_members = session.query(Example).\
-        join(Example.category, aliased=True).filter_by(name=category_name.title()).all()
+        join(Example.category,
+             aliased=True).filter_by(name=category_name.title()).all()
     session.close()
     return render_template('category.html',
                            category=category_name,
@@ -280,6 +284,28 @@ def example(category_name, example_id):
                            example=example_row)
 
 
+@app.route('/<category_name>/<int:example_id>/json')
+@example_must_exist
+def json_example(category_name, example_id):
+    """
+    Handler for an Example page
+
+    Renders an Example, or redirects to the enclosing category if
+    an Example does not exist with the passed in example_id
+    """
+    session = Session()
+    example_row = session.query(Example).filter(Example.id == example_id).one()
+    session.close()
+
+    # Serialise the dictionary and build a JSON response
+    response = make_response(
+        json.dumps(example_row.serialize, sort_keys=True,
+                   indent=4, separators=(',', ': ')), 200)
+    response.headers['Content-Type'] = 'application/json'
+
+    return response
+
+
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     """
@@ -290,6 +316,7 @@ def uploaded_file(filename):
     """
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
+
 
 def validate_form(request, image_required=True):
     """
@@ -350,6 +377,7 @@ def upload_file(file):
     file.save(filepath)
     return filename
 
+
 @app.route('/<category_name>/new', methods=['GET', 'POST'])
 @category_must_exist
 @login_required
@@ -368,31 +396,26 @@ def new(category_name):
 
     if request.method == 'POST':
 
-        name, detail, year, year_int, file, validation_errors = validate_form(request)
+        name, detail, year, year_int, file, validation_errors \
+            = validate_form(request)
 
         # If there are any validation errors, rerender the page with errors
         if len(validation_errors) > 0:
             for error in validation_errors:
                 flash(error)
-            return render_template('create-edit.html',
-                               category=category_name,
-                               form_data={
-                                   'name': name,
-                                   'detail': detail,
-                                   'year': year
-                               })
+            return render_template(
+                'create-edit.html', category=category_name,
+                form_data={'name': name, 'detail': detail, 'year': year})
 
         # Upload the file
         filename = upload_file(file)
 
         # Insert the new Example in the database
         session = Session()
-        new_example = Example(name=name,
-                              detail=detail,
-                              year=year_int,
-                              image_path=filename,
-                              category_id=session.query(Category).filter(
-                                  Category.name==category_name.title()).one().id,
+        category_id = session.query(Category).\
+            filter(Category.name == category_name.title()).one().id
+        new_example = Example(name=name, detail=detail, year=year_int,
+                              image_path=filename, category_id=category_id,
                               creator_email=login_session['email'])
 
         session.add(new_example)
@@ -543,5 +566,3 @@ def json_endpoint():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
-
-
