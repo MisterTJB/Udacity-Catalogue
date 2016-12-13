@@ -27,7 +27,7 @@ Now, open a web browser and navigate to [localhost:5000](http://localhost:5000);
 
 ### Troubleshooting
 
-The application has been tested on independent machines, and the shell script associated with the virtual machine successfully creates and populates the database in all case. Nonetheless, reviewers have encountered an issue where the database does not get created (i.e `sql.exc.OperationalError: database 'catalogue' does not exist`)
+The application has been tested on independent machines, and the shell script associated with the virtual machine successfully creates and populates the database in all cases. Nonetheless, reviewers have encountered an issue where the database does not get created (i.e `sql.exc.OperationalError: database 'catalogue' does not exist`)
 
 ![Error](./screenshots/error.png)
 
