@@ -23,7 +23,7 @@ The project can be installed and run on a local machine, assuming that [Vagrant]
 5. `vagrant@vagrant-ubuntu-trusty-32:~$ cd /vagrant/app/`
 6. `vagrant@vagrant-ubuntu-trusty-32:/vagrant/app$ python main.py `
 
-Now, open a web browser and navigate to [localhost:5000](localhost:5000); if the set up process has been successful, you will see the homepage list six categories.
+Now, open a web browser and navigate to [localhost:5000](http://localhost:5000); if the set up process has been successful, you will see the homepage list six categories.
 
 ## Usage
 
@@ -96,7 +96,7 @@ Assuming that the signed in user is the content creator, the item will be delete
 
 It may be helpful for other applications to access the data in a machine-readable format; as such, the application provides a JSON endpoint.
 
-To observe this, navigate to [localhost:5000/catalogue.json](localhost:5000/catalogue.json).
+To observe this, navigate to [localhost:5000/catalogue.json](http://localhost:5000/catalogue.json).
 
 ![JSON representation](./screenshots/json.png)
 
